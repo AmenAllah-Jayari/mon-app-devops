@@ -12,7 +12,7 @@ pipeline {
         }
         stage('Build Docker Image') {
     steps {
-        bat "docker build --network=host --pull=false -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+        bat "docker build --pull=false -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
     }
 }
         stage('Push Docker Image') {
