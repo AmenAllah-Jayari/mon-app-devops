@@ -12,28 +12,24 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}")
-                }
+                bat "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
             }
         }
         stage('Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
-                        dockerImage.push()
-                        dockerImage.push("latest")
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    bat "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                    bat "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
+                    bat "docker push ${DOCKER_IMAGE}:latest"
                 }
             }
         }
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    withCredentials([file(credentialsId: 'kubeconfig-prod', variable: 'KUBECONFIG')]) {
-                        bat "kubectl set image deployment/mon-app mon-conteneur=${DOCKER_IMAGE}:${BUILD_NUMBER}"
-                        bat "kubectl rollout status deployment/mon-app"
-                    }
+                withCredentials([file(credentialsId: 'kubeconfig-prod', variable: 'KUBECONFIG')]) {
+                    bat "kubectl set image deployment/mon-app mon-conteneur=${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                    bat "kubectl rollout status deployment/mon-app"
                 }
             }
         }
