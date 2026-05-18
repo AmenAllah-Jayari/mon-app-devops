@@ -1,13 +1,13 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = "TON_USERNAME/mon-app-devops"
+        DOCKER_IMAGE = "amenallahjayari/mon-app-devops"
         DOCKER_CREDENTIALS = "dockerhub-credentials"
     }
     stages {
         stage('Checkout') {
             steps {
-                echo '✅ Code récupéré depuis GitHub'
+                echo 'Code recupere depuis GitHub'
             }
         }
         stage('Build Docker Image') {
@@ -39,22 +39,16 @@ pipeline {
         }
         stage('Notify n8n') {
             steps {
-                script {
-                    bat """
-                        curl -X POST http://localhost:5678/webhook/jenkins-deploy ^
-                        -H "Content-Type: application/json" ^
-                        -d "{\\"status\\":\\"success\\",\\"image\\":\\"${DOCKER_IMAGE}:${BUILD_NUMBER}\\"}"
-                    """
-                }
+                bat "curl -X POST http://localhost:5678/webhook/jenkins-deploy -H \"Content-Type: application/json\" -d \"{\\\"status\\\":\\\"success\\\",\\\"image\\\":\\\"${DOCKER_IMAGE}:${BUILD_NUMBER}\\\"}\"" 
             }
         }
     }
     post {
         success {
-            echo "✅ Déploiement réussi : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            echo "Deploiement reussi : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
         }
         failure {
-            echo "❌ Le pipeline a échoué"
+            echo "Le pipeline a echoue"
         }
     }
 }
