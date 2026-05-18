@@ -11,10 +11,10 @@ pipeline {
             }
         }
         stage('Build Docker Image') {
-            steps {
-                bat "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
-            }
-        }
+    steps {
+        bat "docker build --network=host --pull=false -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+    }
+}
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
